@@ -1,100 +1,138 @@
 package io.github.seggan.slimefunwarfare.items;
 
 import io.github.seggan.slimefunwarfare.SlimefunWarfare;
-
-import io.github.seggan.slimefunwarfare.lists.Explosives;
-
+import io.github.seggan.slimefunwarfare.Util;
 import io.github.seggan.slimefunwarfare.lists.Items;
-
+import io.github.thebusybiscuit.slimefun4.core.attributes.DamageableItem;
 import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
-
-import io.github.thebusybiscuit.slimefun4.utils.ChatUtils;
-
+import lombok.Getter;
 import me.mrCookieSlime.Slimefun.Lists.RecipeType;
-
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.SlimefunItem;
-
 import me.mrCookieSlime.Slimefun.api.SlimefunItemStack;
-
-import org.bukkit.GameMode;
-
-import org.bukkit.Material;
-
-import org.bukkit.entity.Snowball;
-
+import org.apache.commons.lang.ArrayUtils;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.LlamaSpit;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
 import org.bukkit.inventory.PlayerInventory;
-
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.util.Vector;
 
-public class Grenade extends SlimefunItem {
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.UUID;
 
-    private final SlimefunItemStack chemical;
+public class Gun extends SlimefunItem implements DamageableItem {
 
-    public Grenade(SlimefunItemStack chemical) {
+    @Getter
+    private final HashMap<UUID, Long> LAST_USES = new HashMap<>();
 
-        super(Items.sfwarfareExplosivesCategory, new SlimefunItemStack(
+    private final int range;
+    private final int minRange;
+    private final int damageDealt;
+    @Getter
+    private final int cooldown;
 
-            chemical.getItemId() + "_GRENADE",
+    public Gun(SlimefunItemStack item, ItemStack[] recipe, int range, int damage, double cooldown) {
+        super(Items.sfwarfareGunsCategory, item, RecipeType.ENHANCED_CRAFTING_TABLE, recipe);
 
-            Material.SNOWBALL,
+        this.range = range;
+        minRange = 0;
+        damageDealt = damage;
+        this.cooldown = (int) (cooldown * 1000);
 
-            "&c化学手榴弹",
-
-            "&7内容: " + ChatUtils.removeColorCodes(chemical.getDisplayName())
-
-        ), RecipeType.ENHANCED_CRAFTING_TABLE, new ItemStack[]{
-
-            Explosives.EMPTY_GRENADE, chemical, null,
-
-            null, null, null,
-
-            null, null, null
-
-        });
-
-        this.chemical = chemical;
-
-        addItemHandler(onLaunch());
-
+        addItemHandler(getItemHandler());
     }
 
-    private ItemUseHandler onLaunch() {
+    public Gun(SlimefunItemStack item, ItemStack[] recipe, int range, int minRange, int damage, double cooldown) {
+        super(Items.sfwarfareGunsCategory, item, RecipeType.ENHANCED_CRAFTING_TABLE, recipe);
 
+        this.range = range;
+        this.minRange = minRange;
+        damageDealt = damage;
+        this.cooldown = (int) (cooldown * 1000);
+
+        addItemHandler(getItemHandler());
+    }
+
+    public ItemUseHandler getItemHandler() {
         return e -> {
-
-            PlayerInventory inv = e.getPlayer().getInventory();
-
-            ItemStack item = inv.getItemInMainHand();
-
-            if (SlimefunItem.getByItem(item) instanceof Grenade ) {
-
-                e.cancel();
-
-                Snowball snowball = e.getPlayer().launchProjectile(Snowball.class);
-
-                snowball.setMetadata("effect", new FixedMetadataValue(
-
-                    SlimefunWarfare.getInstance(),
-
-                    chemical.getItemId()
-
-                ));
-
-                if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
-
-                    item.setAmount(item.getAmount() - 1);
-
-                    inv.setItemInMainHand(item);
-
-                }
-
-            }
-
+            e.cancel();
+            shoot(e.getPlayer());
         };
-
     }
 
-}
+    public void shoot(Player p) {
 
+        PlayerInventory inv = p.getInventory();
+
+        ItemStack gun = inv.getItemInMainHand();
+        if (!(SlimefunItem.getByItem(gun) instanceof Gun)) {
+            return;
+        }
+
+        Long lastUse = LAST_USES.get(p.getUniqueId());
+        long currentTime = System.currentTimeMillis();
+        if (lastUse != null) {
+            if ((currentTime - lastUse) < cooldown) {
+                p.sendMessage(ChatColor.RED + "枪仍在装弹!");
+                return;
+            }
+        }
+        LAST_USES.put(p.getUniqueId(), currentTime);
+
+        double multiplier;
+        boolean isFire;
+        bulletLoop: {
+            ItemStack stack = inv.getItemInOffHand();
+            SlimefunItem item = SlimefunItem.getByItem(stack);
+            if (item instanceof Bullet) {
+                multiplier = ((Bullet) item).getMultiplier();
+                isFire = item.getId().equals("DU_BULLET") || item.getId().equals("TRINITROBULLETENE_BULLET");
+                stack.setAmount(stack.getAmount() - 1);
+                inv.setItemInOffHand(stack);
+                break bulletLoop;
+            } else {
+                ItemStack[] contents = inv.getContents();
+                Iterator<ItemStack> iter = Arrays.stream(contents).iterator();
+                while (iter.hasNext()) {
+                    stack = iter.next();
+                    item = SlimefunItem.getByItem(stack);
+                    if (item instanceof Bullet) {
+                        multiplier = ((Bullet) item).getMultiplier();
+                        isFire = item.getId().equals("DU_BULLET") || item.getId().equals("TRINITROBULLETENE_BULLET");
+                        stack.setAmount(stack.getAmount() - 1);
+                        contents[ArrayUtils.indexOf(contents, stack)] = stack;
+                        inv.setContents(contents);
+                        break bulletLoop;
+                    }
+                }
+            }
+            p.sendMessage(ChatColor.RED + "你没有子弹了!");
+            return;
+        }
+
+        Vector v = p.getEyeLocation().subtract(0, 1, 0).getDirection().multiply(20);
+        LlamaSpit bullet = p.launchProjectile(LlamaSpit.class);
+        bullet.setMetadata("isGunBullet", new FixedMetadataValue(SlimefunWarfare.getInstance(), true));
+        bullet.setMetadata("damage",
+            new FixedMetadataValue(SlimefunWarfare.getInstance(), damageDealt * multiplier)
+        );
+        bullet.setMetadata("isFire", new FixedMetadataValue(SlimefunWarfare.getInstance(), isFire));
+        bullet.setMetadata("locInfo", new FixedMetadataValue(
+            SlimefunWarfare.getInstance(),
+            Util.serializeLocation(p.getEyeLocation())
+        ));
+        bullet.setMetadata("rangeInfo", new FixedMetadataValue(
+            SlimefunWarfare.getInstance(),
+            range + ":" + minRange
+            ));
+        bullet.setVelocity(v);
+    }
+
+    @Override
+    public boolean isDamageable() {
+        return true;
+    }
+}
