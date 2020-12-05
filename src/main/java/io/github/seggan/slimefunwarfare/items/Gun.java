@@ -49,7 +49,7 @@ public class Gun extends SlimefunItem implements DamageableItem {
         super(Items.sfwarfareGunsCategory, item, RecipeType.ENHANCED_CRAFTING_TABLE, recipe);
 
         this.range = range;
-        this.minRange = SlimefunWarfare.getConfigSettings().isMinRangeOn() ? minRange : 0;
+        this.minRange = minRange;
         damageDealt = damage;
         this.cooldown = (int) (cooldown * 1000);
 
@@ -94,20 +94,18 @@ public class Gun extends SlimefunItem implements DamageableItem {
                 inv.setItemInOffHand(stack);
                 break bulletLoop;
             } else {
-                if (SlimefunWarfare.getConfigSettings().isUseBulletsFromInv()) {
-                    ItemStack[] contents = inv.getContents();
-                    Iterator<ItemStack> iter = Arrays.stream(contents).iterator();
-                    while (iter.hasNext()) {
-                        stack = iter.next();
-                        item = SlimefunItem.getByItem(stack);
-                        if (item instanceof Bullet) {
-                            multiplier = ((Bullet) item).getMultiplier();
-                            isFire = item.getId().equals("DU_BULLET") || item.getId().equals("TRINITROBULLETENE_BULLET");
-                            stack.setAmount(stack.getAmount() - 1);
-                            contents[ArrayUtils.indexOf(contents, stack)] = stack;
-                            inv.setContents(contents);
-                            break bulletLoop;
-                        }
+                ItemStack[] contents = inv.getContents();
+                Iterator<ItemStack> iter = Arrays.stream(contents).iterator();
+                while (iter.hasNext()) {
+                    stack = iter.next();
+                    item = SlimefunItem.getByItem(stack);
+                    if (item instanceof Bullet) {
+                        multiplier = ((Bullet) item).getMultiplier();
+                        isFire = item.getId().equals("DU_BULLET") || item.getId().equals("TRINITROBULLETENE_BULLET");
+                        stack.setAmount(stack.getAmount() - 1);
+                        contents[ArrayUtils.indexOf(contents, stack)] = stack;
+                        inv.setContents(contents);
+                        break bulletLoop;
                     }
                 }
             }
