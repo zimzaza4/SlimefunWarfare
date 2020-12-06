@@ -28,7 +28,7 @@ public final class Items {
     public static final SlimefunItemStack SLIMESTEEL = new SlimefunItemStack(
         "SLIMESTEEL_INGOT",
         Material.IRON_INGOT,
-        "&a滑钢锭",
+        "&a软钢锭",
         "",
         "坚硬但富有弹性，这种合金非常适合各种应用"
     );
@@ -44,7 +44,7 @@ public final class Items {
     public static final SlimefunItemStack SCOPE = new SlimefunItemStack(
         "SCOPE",
         Material.STICK,
-        "&a范围"
+        "&a瞄准器"
     );
 
     public static final SlimefunItemStack BARREL = new SlimefunItemStack(
@@ -126,7 +126,7 @@ public final class Items {
     public static final SlimefunItemStack GUN_CASE = new SlimefunItemStack(
         "GUN_CASE",
         Material.CROSSBOW,
-        "&7枪盒",
+        "&7枪壳",
         "&7所有枪的基础"
     );
 
