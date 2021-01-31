@@ -5,6 +5,13 @@ import org.bukkit.Material;
 
 public final class Explosives {
 
+    public static final SlimefunItemStack THIOACETONE = new SlimefunItemStack(
+        "THIOACETONE",
+        Material.BROWN_DYE,
+        "&6Thioacetone",
+        "&7Very smelly indeed"
+    );
+
     private Explosives() {}
 
     public static final SlimefunItemStack NITROGEN_TRIIODIDE = new SlimefunItemStack(
@@ -40,5 +47,12 @@ public final class Explosives {
         Material.GRAY_CONCRETE,
         "&7钢筋混凝土",
         "&7防爆（非防tnt?）混凝土"
+    );
+
+    public static final SlimefunItemStack NUCLEAR_BOMB = new SlimefunItemStack(
+        "NUCLEAR_BOMB",
+        Material.TNT,
+        "&7Nuclear Bomb",
+        "&7KABOOM!"
     );
 }
