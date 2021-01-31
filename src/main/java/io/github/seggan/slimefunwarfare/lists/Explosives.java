@@ -52,7 +52,7 @@ public final class Explosives {
     public static final SlimefunItemStack NUCLEAR_BOMB = new SlimefunItemStack(
         "NUCLEAR_BOMB",
         Material.TNT,
-        "&7Nuclear Bomb",
-        "&7KABOOM!"
+        "&7核弹",
+        "&7天下核平!"
     );
 }
