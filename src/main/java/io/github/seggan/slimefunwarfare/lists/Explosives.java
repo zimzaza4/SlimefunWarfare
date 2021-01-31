@@ -8,8 +8,8 @@ public final class Explosives {
     public static final SlimefunItemStack THIOACETONE = new SlimefunItemStack(
         "THIOACETONE",
         Material.BROWN_DYE,
-        "&6Thioacetone",
-        "&7Very smelly indeed"
+        "&6硫丙酮",
+        "&7确实很臭..."
     );
 
     private Explosives() {}
@@ -46,7 +46,7 @@ public final class Explosives {
         "REINFORCED_CONCRETE",
         Material.GRAY_CONCRETE,
         "&7钢筋混凝土",
-        "&7防爆（非防tnt?）混凝土"
+        "&7防爆混凝土"
     );
 
     public static final SlimefunItemStack NUCLEAR_BOMB = new SlimefunItemStack(
