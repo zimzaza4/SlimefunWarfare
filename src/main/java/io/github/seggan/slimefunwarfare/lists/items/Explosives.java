@@ -94,7 +94,7 @@ public final class Explosives {
     public static final SlimefunItemStack ENRICHED_URANIUM = new SlimefunItemStack(
         "ENRICHED_URANIUM",
         HeadTexture.BOOSTED_URANIUM,
-        "&aEnriched Uranium"
+        "&a浓缩铀"
     );
 
     public static final SlimefunItemStack EMPTY_GRENADE = new SlimefunItemStack(
